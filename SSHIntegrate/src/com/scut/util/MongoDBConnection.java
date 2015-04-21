@@ -1,0 +1,112 @@
+package com.scut.util;
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bson.Document;
+
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
+
+
+public class MongoDBConnection {
+	private static MongoClient mongoClient = new MongoClient("localhost", 27017);
+	private static String dbName = "computerEngineering" ;
+	
+	
+	/**
+	 * insert a document to mongodb Database*/
+	public static void insert(Document doc, String dbCollectionName) {
+		MongoDatabase db = mongoClient.getDatabase(dbName) ;
+		MongoCollection<Document> dbCollection = db.getCollection(dbCollectionName);
+		dbCollection.insertOne(doc);
+	}
+	
+	
+	/**
+	 * delete a document while document equal database a document*/ 
+	public static void delete(Document doc, String dbCollectionName) {
+		MongoClient mongoClient = new MongoClient("localhost", 27017);
+		MongoDatabase db = mongoClient.getDatabase(dbName) ;
+		MongoCollection<Document> dbCollection = db.getCollection(dbCollectionName);
+		dbCollection.findOneAndDelete(doc);
+		mongoClient.close();
+	}
+	
+	
+	/**
+	 * from database get a document while document equal some query */
+	public static Document get(Document docQuery, String dbCollectionName) {
+		MongoDatabase db = mongoClient.getDatabase(dbName) ;
+		MongoCollection<Document> dbCollection = db.getCollection(dbCollectionName);
+		Document document = dbCollection.find(docQuery).iterator().next();
+		return document;		
+	}
+	
+	
+	
+	/**
+	 * query some document by page*/
+	public static List<Document> queryByPage(int pageNo, int pageSize, String dbCollectionName) {
+		MongoDatabase db = mongoClient.getDatabase(dbName) ;
+		MongoCollection<Document> dbCollection = db.getCollection(dbCollectionName);
+		MongoIterable<Document> mongoIterable = dbCollection.find().skip((pageNo-1) * pageSize).limit(pageSize);
+		MongoCursor<Document> mongoCursor = mongoIterable.iterator();
+		List<Document> dList = new ArrayList<Document>();
+		while(mongoCursor.hasNext()) {
+			dList.add(mongoCursor.next());
+		}
+		return dList;		
+	}
+	
+	
+	/**
+	 * query some document by page*/
+	public static List<Document> queryByPage(int pageNo, int pageSize, Document queryDoc, String dbCollectionName) {
+		MongoDatabase db = mongoClient.getDatabase(dbName) ;
+		MongoCollection<Document> dbCollection = db.getCollection(dbCollectionName);
+		MongoIterable<Document> mongoIterable = dbCollection.find(queryDoc).skip((pageNo-1) * pageSize).limit(pageSize);
+		MongoCursor<Document> mongoCursor = mongoIterable.iterator();
+		List<Document> dList = new ArrayList<Document>();
+		while(mongoCursor.hasNext()) {
+			dList.add(mongoCursor.next());
+		}
+		mongoCursor.close();
+		return dList;		
+	}
+	
+	
+	/**
+	 * query a document*/
+	public static Document queryOne(Document docQuery, String dbCollectionName) {
+		MongoDatabase db = mongoClient.getDatabase(dbName) ;
+		MongoCollection<Document> dbCollection = db.getCollection(dbCollectionName);
+		Document document = dbCollection.find(docQuery).iterator().next();
+		return document;
+	}
+	
+	/**
+	 * get total document from database*/
+	public static long getCount(String dbCollectionName) {
+		MongoDatabase db = mongoClient.getDatabase(dbName) ;
+		MongoCollection<Document> dbCollection = db.getCollection(dbCollectionName);
+		long num = dbCollection.count();
+		return num;
+	}
+	
+	
+	/**
+	 * get total document from database where equal some data*/
+	public static long getCount(String dbCollectionName,Object obj) {
+		MongoDatabase db = mongoClient.getDatabase(dbName) ;
+		MongoCollection<Document> dbCollection = db.getCollection(dbCollectionName);
+		long num = dbCollection.count(obj);
+		return num;
+	}
+	
+
+}
